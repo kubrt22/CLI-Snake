@@ -1,8 +1,8 @@
 #include <iostream>
-#include <ncurses.h>
 #include <vector>
 #include <ctime>
 
+#include <ncurses.h>
 #include "clipp.h"
 
 const int MAP_SIZE = 60;
@@ -167,7 +167,7 @@ public:
             case Key::Q:
                 break;
             default:
-                break; // handle invalid key inputs
+                break;
         }
         switch (direction) {
             case UP:
@@ -250,7 +250,7 @@ public:
 
         while (true) {
             wclear(win);
-            // clear();
+            clear();
 
             if (ch2 == ERR) {
                 ch = getch();
@@ -271,15 +271,8 @@ public:
 
             if (FIXED_SIZE) {
                 mvprintw(getbegy(win) - 1, getbegx(win), "Score: %ld", snake.tail.size() - Snake::INITIAL_TAIL_SIZE);
-
-                mvprintw(getbegy(win) - 3, getbegx(win), "Snake: %d x %d", snake.pos.y, snake.pos.x);
-                mvprintw(getbegy(win) - 4, getbegx(win), "Food:  %d x %d", food.pos.y, food.pos.x);
             } else {
                 mvwprintw(win, 0, 1, "Score: %ld", snake.tail.size() - Snake::INITIAL_TAIL_SIZE);
-
-                mvwprintw(win, 1, 1, "Snake: %d x %d", snake.pos.y, snake.pos.x);
-                mvwprintw(win, 2, 1, "Food:  %d x %d", food.pos.y, food.pos.x);
-                mvwprintw(win, 3, 1, "Max:   %d x %d", maxY, maxX / 2);
             }
 
             refresh();
@@ -332,6 +325,12 @@ void ncursesSetup() {
         init_pair(1, COLOR_RED, -1);
         init_pair(2, COLOR_GREEN, -1);
     }
+
+    if (!has_colors()) {
+        endwin();
+        std::cerr << "Your terminal does not support color" << std::endl;
+        exit(1);
+    }
 }
 void GameOver(WINDOW *win, int maxY, int maxX) {
 
@@ -359,7 +358,6 @@ void argumentParser(int argc, char *argv[]) {
     using namespace clipp;
 
     bool help = false;
-    bool version = false;
     bool overrideDifficulty = false;
 
     group cli;
