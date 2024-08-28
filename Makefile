@@ -1,6 +1,6 @@
 CXX = g++
 
-CXXFLAGS = -std=c++20 -Wall -Wextra
+CXXFLAGS = -std=c++20 -Wall -Wextra -g -O0
 INCLUDES =
 LDFLAGS =
 LIBS = -lncurses
