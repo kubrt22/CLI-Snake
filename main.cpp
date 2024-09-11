@@ -285,14 +285,6 @@ public:
                 break;
             }
 
-            if (ch == 'p') {
-                while (true) {
-                    ch = getch();
-                    if (ch == 'p') {
-                        break;
-                    }
-                }
-            }
             napms(DELAY - DIFFICULTY * 30);
         }
         endwin();
