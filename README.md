@@ -14,4 +14,4 @@ cd CLI-Snake
 make
 ```
 
-U need to have the ncurses library on Path
+U need to have the ncurses library on Path or in the same folder as snake
