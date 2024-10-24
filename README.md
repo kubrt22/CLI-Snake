@@ -16,6 +16,11 @@ make
 
 U need to have the ncurses library on Path or in the same folder as snake
 
+Then copy binary to path
+```bash
+sudo cp ./snake /usr/local/bin
+```
+
 ## Usage
 ```
 Usage:

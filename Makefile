@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -std=c++20 -s -O3
 LIBS = -lncurses
 
-TARGET = main
+TARGET = snake
 
 SRCS = $(wildcard *.cpp)
 

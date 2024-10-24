@@ -5,9 +5,9 @@
 #include <ncurses.h>
 #include "clipp.h"
 
-const int MAP_SIZE = 60;
 const int DELAY = 230;
 
+int MAP_SIZE = 20;
 bool FIXED_SIZE = true;
 int DIFFICULTY = 1;
 bool COLOR = false;
@@ -232,10 +232,10 @@ public:
         int maxY, maxX;
         getmaxyx(stdscr, maxY, maxX);
 
-        int width = FIXED_SIZE ? MAP_SIZE : maxX;
-        int height = FIXED_SIZE ? MAP_SIZE / 2 : maxY;
-        int start_x = FIXED_SIZE ? maxX / 2 - MAP_SIZE / 2 : 0;
-        int start_y = FIXED_SIZE ? maxY / 2 - MAP_SIZE / 4 : 0;
+        int width = FIXED_SIZE ? MAP_SIZE * 2 : maxX;
+        int height = FIXED_SIZE ? MAP_SIZE : maxY;
+        int start_x = FIXED_SIZE ? maxX / 2 - MAP_SIZE : 0;
+        int start_y = FIXED_SIZE ? maxY / 2 - MAP_SIZE / 2 : 0;
         
         WINDOW *win = newwin(height, width, start_y, start_x);
 
@@ -355,9 +355,10 @@ void argumentParser(int argc, char *argv[]) {
     group cli;
     cli = joinable(
         (
-        (option("-d", "--difficulty") & integer("difficulty", DIFFICULTY)).doc("Set difficulty 1-5 (default: 1)"),
+        (option("-d", "--difficulty") & integer("difficulty", DIFFICULTY)).doc("Set difficulty 1-5 (default: " + std::to_string(DIFFICULTY) + ")"),
         option("-o", "--override").set(overrideDifficulty).doc("Override difficulty limit"),
-        option("-f", "--nofixed").set(FIXED_SIZE, false).doc("Use the whole terminal window")
+        option("-f", "--nofixed").set(FIXED_SIZE, false).doc("Use the whole terminal window"),
+        (option("-s", "--size") & integer("size", MAP_SIZE)).doc("Set map size 10 - 50 (default: " + std::to_string(MAP_SIZE) + ")")
         ).doc("Game options"),
         (
         option("-c", "--color").set(COLOR).doc("Enable color mode"),
@@ -374,7 +375,7 @@ void argumentParser(int argc, char *argv[]) {
         .last_column(80)
         ;
 
-    if (!parse(argc, argv, cli) || help || (!overrideDifficulty && (DIFFICULTY < 1 || DIFFICULTY > 5))) {
+    if (!parse(argc, argv, cli) || help || (!overrideDifficulty && (DIFFICULTY < 1 || DIFFICULTY > 5) && (MAP_SIZE < 10 || MAP_SIZE > 50))) {
         std::cout << "Usage:\n" << usage_lines(cli, argv[0], ftm) << std::endl
                 << "Options:\n" << documentation(cli, ftm) << std::endl;
         exit(0);
