@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <thread>
 
 #include <ncurses.h>
 #include "clipp.h"
@@ -57,11 +58,11 @@ public:
     Point pos;
     int width = 1;
 public:
-    Food(int MaxX, int MaxY) {
+    Food(int MaxY, int MaxX, std::vector<Point> tail = {}) {
         if (WIDE) {
             width = 2;
         }
-        Move(MaxX, MaxY);
+        Move(MaxY, MaxX, tail);
     }
     void Draw(WINDOW *win) {
         char boxChar = 'x';
@@ -75,12 +76,20 @@ public:
             wattron(win, COLOR_PAIR(1));
         }
         mvwprintw(win, pos.y, pos.x, std::string(boxWidth, boxChar).c_str());
+        mvwprintw(win, 1, 1, std::to_string(pos.x).c_str());
         wattroff(win, A_REVERSE | A_DIM | COLOR_PAIR(1));
     }
 
-    void Move(int maxX, int maxY) {
+    void Move(int maxY, int maxX, std::vector<Point> tail = {}) {
         pos.y = rand() % (maxY - 2) + 1;
         pos.x = rand() % (maxX - width * 3 + 1) + width; // 3 is a magic number
+
+        for (std::size_t i = 0; i < tail.size(); i++) {
+            if (CheckCollision(tail[i])) {
+                Move(maxY, maxX, tail);
+                i = 0;
+            }
+        }
         if (BLOCK_FOOD || WIDE) {
             pos.x = pos.x + pos.x % width;
         }
@@ -95,26 +104,60 @@ public:
 };
 
 class Snake {
-public:
+private:
     Point pos;
     Direction direction;
-    int tailSize;
     int width = 1;
-    static const int INITIAL_TAIL_SIZE = 5;
 
     std::vector<Point> tail;
-public:
-    Snake(Point xy, int tailSize = INITIAL_TAIL_SIZE) {
-        if (WIDE) {
-            width = 2;
-        }
 
-        this->pos = xy;
-        this->direction = RIGHT;
-        this->tailSize = tailSize;
+public:
+    static const int INITIAL_TAIL_SIZE = 5;
+
+private:
+    Direction HandleKeyPress(wchar_t ch) {
+        switch ((Key)ch) {
+            case Key::w:
+            case Key::W:
+            case Key::UP:
+                return UP;
+            case Key::s:
+            case Key::S:
+            case Key::DOWN:
+                return DOWN;
+            case Key::a:
+            case Key::A:
+            case Key::LEFT:
+                return LEFT;
+            case Key::d:
+            case Key::D:
+            case Key::RIGHT:
+                return RIGHT;
+            default:
+                return direction;
+        }
+    }
+
+    void HandleFoodCollision(Food &food, int maxY, int maxX, Point prev) {
+        if (food.CheckCollision(pos)) {
+            tail.push_back(prev);
+            food.Move(maxY, maxX, tail);
+        }
+    }
+public:
+    Snake(Point xy, int tailSize = INITIAL_TAIL_SIZE)
+        : pos(xy), direction(RIGHT), width(WIDE ? 2 : 1) {
         for (int i = 0; i < tailSize; i++) {
             this->tail.push_back({pos.y, pos.x - i * width});
         }
+    }
+
+    int GetTailSize() {
+        return tail.size();
+    }
+
+    std::vector<Point> GetTail() {
+        return tail;
     }
 
     void Draw(WINDOW *win) {
@@ -130,45 +173,12 @@ public:
             mvwprintw(win, tail[i].y, tail[i].x, std::string(width, boxChar).c_str());
         }
         wattroff(win, A_REVERSE | A_BOLD | COLOR_PAIR(2));
+
+        mvwprintw(win, 2, 1, std::to_string(pos.x).c_str());
     }
 
     void Move(wchar_t ch) {
-        switch ((Key)ch) {
-            case Key::w:
-            case Key::W:
-            case Key::UP:
-                if (direction != DOWN) {
-                    direction = UP;
-                }
-                break;
-            case Key::s:
-            case Key::S:
-            case Key::DOWN:
-                if (direction != UP) {
-                    direction = DOWN;
-                }
-                break;
-            case Key::a:
-            case Key::A:
-            case Key::LEFT:
-                if (direction != RIGHT) {
-                    direction = LEFT;
-                }
-                break;
-            case Key::d:
-            case Key::D:
-            case Key::RIGHT:
-                if (direction != LEFT) {
-                    direction = RIGHT;
-                }
-                break;
-            case Key::ESCAPE:
-            case Key::q:
-            case Key::Q:
-                break;
-            default:
-                break;
-        }
+        direction = HandleKeyPress(ch);
         switch (direction) {
             case UP:
                 pos.y--;
@@ -185,7 +195,7 @@ public:
         }
     }
 
-    void Update(Food &food, int maxX, int maxY) {
+    void Update(Food &food, int maxY, int maxX) {
         Point prev, prev2;
         prev = tail[0]; // Save prev pos of the head in vector
         tail[0] = pos; // Update head pos
@@ -196,19 +206,10 @@ public:
             prev = prev2; // Update prev pos
         }
 
-        if (food.CheckCollision(pos)) {
-            tail.push_back(prev); // Add a new tail
-            food.Move(maxX, maxY);
-            for (std::size_t i = 0; i < tail.size(); i++) {
-                if (food.CheckCollision(tail[i])) {
-                    food.Move(maxX, maxY);
-                    i = 0;
-                }
-            }
-        }
+        HandleFoodCollision(food, maxY, maxX, prev);
     }
 
-    bool CheckCollision(int maxX, int maxY) {
+    bool CheckCollision(int maxY, int maxX) {
         for (std::size_t i = 1; i < tail.size(); i++) {
             if (pos.y == tail[i].y && pos.x == tail[i].x) {
                 return true;
@@ -221,71 +222,75 @@ public:
 
         return false;
     }
-    
 };
 
 class Game {
+private:
+    int screenMaxY, screenMaxX;
+    int winWidth, winHeight, winStartX, winStartY;
+    int winMaxY, winMaxX;
+
+private:
+    
 public:
     void Run() {
         ncursesSetup();
 
-        int maxY, maxX;
-        getmaxyx(stdscr, maxY, maxX);
-
-        int width = FIXED_SIZE ? MAP_SIZE * 2 : maxX;
-        int height = FIXED_SIZE ? MAP_SIZE : maxY;
-        int start_x = FIXED_SIZE ? maxX / 2 - MAP_SIZE : 0;
-        int start_y = FIXED_SIZE ? maxY / 2 - MAP_SIZE / 2 : 0;
+        getmaxyx(stdscr, screenMaxY, screenMaxX);
+        winWidth = FIXED_SIZE ? MAP_SIZE * 2 : screenMaxX;
+        winHeight = FIXED_SIZE ? MAP_SIZE : screenMaxY;
+        winStartX = FIXED_SIZE ? screenMaxX / 2 - MAP_SIZE : 0;
+        winStartY = FIXED_SIZE ? screenMaxY / 2 - MAP_SIZE / 2 : 0;
         
-        WINDOW *win = newwin(height, width, start_y, start_x);
+        WINDOW *win = newwin(winHeight, winWidth, winStartY, winStartX);
+        nodelay(win, true);
 
-        getmaxyx(win, maxY, maxX);
+        winMaxY = winHeight;
+        winMaxX = winWidth;
 
         srand(time(0));
 
-        Snake snake({ maxY / 2, maxX / 2 - (maxX % 2) });
-        Food food(maxX, maxY);
+        Snake snake({ winMaxY / 2, winMaxX / 2 - (winMaxX / 2 % 2) });
+        Food food(winMaxY, winMaxX, snake.GetTail());
 
         wchar_t ch, ch2 = ERR;
-
+        
         while (true) {
-            wclear(win);
-            clear();
 
             if (ch2 == ERR) {
-                ch = getch();
+                ch = wgetch(win);
             } else {
                 ch = ch2;
             }
-            ch2 = getch();
+            ch2 = wgetch(win);
             flushinp();
 
-
             snake.Move(ch);
-            snake.Update(food, maxX, maxY);
+            snake.Update(food, winMaxY, winMaxX);
+
+            werase(win);
 
             food.Draw(win);
             snake.Draw(win);
-
             box(win, 0, 0);
 
             if (FIXED_SIZE) {
-                mvprintw(getbegy(win) - 1, getbegx(win), "Score: %ld", snake.tail.size() - Snake::INITIAL_TAIL_SIZE);
+                mvprintw(getbegy(win) - 1, getbegx(win), "Score: %d", snake.GetTailSize() - Snake::INITIAL_TAIL_SIZE);
             } else {
-                mvwprintw(win, 0, 1, "Score: %ld", snake.tail.size() - Snake::INITIAL_TAIL_SIZE);
+                mvwprintw(win, 0, 1, "Score: %d", snake.GetTailSize() - Snake::INITIAL_TAIL_SIZE);
             }
 
-            refresh();
             wrefresh(win);
+            refresh();
 
-            if (snake.CheckCollision(maxX, maxY) || ch == (wchar_t)Key::ESCAPE || ch == (wchar_t)Key::q || ch == (wchar_t)Key::Q) {
-                if (snake.CheckCollision(maxX, maxY)) {
-                    GameOver(win, maxY, maxX);
+            if (snake.CheckCollision(winMaxY, winMaxX) || ch == (wchar_t)Key::ESCAPE || ch == (wchar_t)Key::q || ch == (wchar_t)Key::Q) {
+                if (snake.CheckCollision(winMaxY, winMaxX)) {
+                    GameOver(win, winMaxY, winMaxX);
                 }
                 break;
             }
 
-            napms(DELAY - DIFFICULTY * 30);
+            std::this_thread::sleep_for(std::chrono::milliseconds(DELAY - DIFFICULTY * 30));
         }
         endwin();
     }
@@ -327,9 +332,10 @@ void ncursesSetup() {
 void GameOver(WINDOW *win, int maxY, int maxX) {
 
     std::string gameOver = "  Game Over  ";
-    mvwprintw(win, maxY / 2, maxX / 2 - gameOver.size() / 2, gameOver.c_str());
-    charbox(win, maxY / 2 - 1, maxX / 2 - gameOver.size() / 2 - 1, 3, gameOver.size() + 1);
+    mvwprintw(win, maxY / 2 - 1, maxX / 2 - gameOver.size() / 2, gameOver.c_str());
+    charbox(win, maxY / 2 - 2, maxX / 2 - gameOver.size() / 2 - 1, 2, gameOver.size() + 1);
 
+    box(win, 0, 0);
     wrefresh(win);
     nodelay(stdscr, false);
     getch();
