@@ -1,0 +1,6 @@
+.vscode/
+curses.h
+pdcurses.a
+snake
+snake.exe
+build/

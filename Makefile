@@ -1,16 +1,36 @@
 CXX = g++
+CXXFLAGS = -std=c++20 -Wall -Wextra -D_DEBUG -Iinclude -g
 
-CXXFLAGS = -std=c++20 -g -Wall -Wextra
-LIBS = -lncurses
+TARGET_NAME = snake
 
-TARGET = snake
+ifeq ($(OS),Windows_NT)
+	CXXFLAGS += -I.
+	LIBS = ./pdcurses.a 
+	RM = del
+	TARGET = $(TARGET_NAME).exe
+else
+	LIBS = -lncurses
+	RM = rm -f
+	TARGET = $(TARGET_NAME)
+endif
 
-SRCS = $(wildcard *.cpp)
+SRCS = $(wildcard src/*.cpp)
+OBJS = $(patsubst src/%.cpp,build/%.o,$(SRCS))
+
+.PHONY: all clean
 
 all: $(TARGET)
 
-$(TARGET): $(SRCS)
-	$(CXX) -o $(TARGET) $(SRCS) $(CXXFLAGS) $(LIBS)
+$(TARGET): $(OBJS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
+
+build/%.o: src/%.cpp
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 clean:
-	$(RM) $(TARGET)
+ifeq ($(OS),Windows_NT)
+	del $(TARGET)
+	del build\*.o
+else
+	$(RM) $(TARGET) $(OBJS)
+endif
