@@ -1,8 +1,11 @@
 #pragma once
-#include <vector>
+
+#include "utils.hpp"
+#include "food.hpp"
+
 #include "curses.h"
-#include "Utils.hpp"
-#include "Food.hpp"
+
+#include <vector>
 
 class Snake {
 private:

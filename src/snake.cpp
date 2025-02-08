@@ -1,24 +1,23 @@
-#include "Snake.hpp"
-#include "Food.hpp"
-#include "Utils.hpp" // For globals like WIDE
+#include "snake.hpp"
+#include "food.hpp"
+#include "utils.hpp"
+
 #include "curses.h"
+
 #include <string>
 
 Direction Snake::HandleKeyPress(int ch) {
+    ch = std::toupper(ch);
     switch ((Key)ch) {
-        case Key::w:
         case Key::W:
         case Key::UP:
             return UP;
-        case Key::s:
         case Key::S:
         case Key::DOWN:
             return DOWN;
-        case Key::a:
         case Key::A:
         case Key::LEFT:
             return LEFT;
-        case Key::d:
         case Key::D:
         case Key::RIGHT:
             return RIGHT;

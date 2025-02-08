@@ -1,5 +1,5 @@
-#include "Food.hpp"
-#include "Utils.hpp"
+#include "food.hpp"
+#include "utils.hpp"
 
 #include "curses.h"
 

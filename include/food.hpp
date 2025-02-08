@@ -1,7 +1,8 @@
 #pragma once
 
+#include "utils.hpp"
+
 #include "curses.h"
-#include "Utils.hpp"
 
 #include <vector>
 #include <random>

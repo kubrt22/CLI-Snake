@@ -1,9 +1,10 @@
-#include "Utils.hpp"
+#include "utils.hpp"
+
 #include "curses.h"
+#include "clipp.h"
 
 #include <iostream>
 
-#include "clipp.h"
 
 void argumentParser(int argc, char *argv[]) {
     using namespace clipp;
@@ -20,7 +21,7 @@ void argumentParser(int argc, char *argv[]) {
         (option("-s", "--size") & integer("size", GameOptions::MAP_SIZE)).doc("Set map size 10 - 50 (default: " + std::to_string(GameOptions::MAP_SIZE) + ")")
         ).doc("Game options"),
         (
-        option("-c", "--color").set(GameOptions::COLOR).doc("Enable color mode"),
+        option("-c", "--no-color").set(GameOptions::COLOR).doc("Disable color mode"),
         option("-a", "--ascii").set(GameOptions::BLOCK, false).doc("ASCII mode (overrides -w and -b)"),
         option("-w", "--nowide").set(GameOptions::WIDE, false).doc("Turn off wide mode"),
         option("-b", "--no-block-food").set(GameOptions::BLOCK_FOOD, false).doc("Disable block food")

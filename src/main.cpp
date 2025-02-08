@@ -1,5 +1,5 @@
-#include "Utils.hpp"
-#include "Game.hpp"
+#include "utils.hpp"
+#include "game.hpp"
 
 int main(int argc, char *argv[]) {
     argumentParser(argc, argv);
