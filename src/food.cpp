@@ -25,10 +25,10 @@ void Food::Draw(WINDOW *win) {
         boxWidth = width;
     }
     if (GameOptions::COLOR) {
-        wattron(win, COLOR_PAIR(1));
+        wattron(win, COLOR_PAIR(COLOR_RED));
     }
     mvwprintw(win, pos.y, pos.x, std::string(boxWidth, boxChar).c_str());
-    wattroff(win, A_REVERSE | A_DIM | COLOR_PAIR(1));
+    wattroff(win, A_REVERSE | A_DIM | COLOR_PAIR(COLOR_RED));
 }
 
 void Food::Move(int maxY, int maxX, std::vector<Point> tail) {

@@ -1,6 +1,6 @@
 #include "auto.hpp"
 
-#include <ncurses.h>
+#include "curses.h"
 
 #include <vector>
 

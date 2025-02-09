@@ -55,12 +55,12 @@ void Snake::Draw(WINDOW *win) {
         wattron(win, A_REVERSE | A_BOLD);
     }
     if (GameOptions::COLOR) {
-        wattron(win, COLOR_PAIR(2));
+        wattron(win, COLOR_PAIR(COLOR_GREEN));
     }
     for (std::size_t i = 0; i < tail.size(); i++) {
         mvwprintw(win, tail[i].y, tail[i].x, std::string(width, boxChar).c_str());
     }
-    wattroff(win, A_REVERSE | A_BOLD | COLOR_PAIR(2));
+    wattroff(win, A_REVERSE | A_BOLD | COLOR_PAIR(COLOR_GREEN));
 }
 
 void Snake::Move(int ch) {

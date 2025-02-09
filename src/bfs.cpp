@@ -1,7 +1,7 @@
 #include "bfs.hpp"
 #include "utils.hpp"
 
-#include <ncurses.h>
+#include "curses.h"
 
 #include <vector>
 #include <algorithm>
