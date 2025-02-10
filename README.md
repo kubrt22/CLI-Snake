@@ -1,11 +1,10 @@
 ## Terminal snake game
-Classic snake game made using C++ and ncurses, it has multiple difficulties and visual options.
+Classic snake game made using C++ and ncurses, it has multiple difficulties and visual options and autoplay mode.
 
 ## Dependencies
  - C++ compiler
  - Ncurses library
 
-On linux you can download everything with package managers
 
 ## Build
 ```bash
