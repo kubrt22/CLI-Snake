@@ -3,27 +3,39 @@ Classic snake game made using C++ and ncurses, it has multiple difficulties and 
 
 ## Dependencies
  - C++ compiler
- - Ncurses library
+ - Cmake
+ - Ncurses library (Linux)
 
-
+The cmake will build pdcurses on windows and automaticly add it.
 ## Build
 ```bash
-git clone https://github.com/kubrt22/CLI-Snake.git
-cd CLI-Snake
+git clone https://github.com/kubrt22/cli-Snake.git
+cd cli-Snake
+mkdir build
+cd build
+cmake ..
 make
 ```
-
-U need to have the ncurses library on Path or in the same folder as snake
-
-Then copy binary to path
 ```bash
-sudo cp ./snake /usr/local/bin
+git clone https://github.com/kubrt22/cli-Snake.git && cd cli-Snake && mkdir build && cd build && cmake .. && make
 ```
+On linux install it using cmake, on windows u have to add it to your path
+```bash
+cmake --install .
+```
+### Alternative
+```bash
+g++ -o snake src/*.cpp -std=c++17 -Iinclude -s -O3 -lncurses
+```
+
+## Keybinds
+- **p** - shows shortest path to the food
+- **n** - enable autoplay (using the pathfinding)
 
 ## Usage
 ```
 Usage:
-    snake [-d <difficulty>] [-o] [-f] [-c] [-a] [-w] [-b] [-h]
+    snake [-d <difficulty>] [-o] [-f] [-s <size>] [-c] [-a] [-w] [-b] [-h]
 Options:
     Game options
         -d, --difficulty <difficulty>
@@ -31,17 +43,16 @@ Options:
 
         -o, --override      Override difficulty limit
         -f, --nofixed       Use the whole terminal window
+        -s, --size <size>   Set map size 10 - 50 (default: 20)
 
     Visual options
-        -c, --color         Enable color mode
+        -c, --no-color      Disable color mode
         -a, --ascii         ASCII mode (overrides -w and -b)
         -w, --nowide        Turn off wide mode
         -b, --no-block-food Disable block food
 
     -h, --help              Print help
-
-
 ```
 
 ## Screenshots
-![image](https://github.com/user-attachments/assets/1da28d31-759f-44e8-b119-3f6fb3ea552f)
+
