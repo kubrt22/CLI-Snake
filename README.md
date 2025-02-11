@@ -55,4 +55,6 @@ Options:
 ```
 
 ## Screenshots
+![image](https://github.com/user-attachments/assets/34a604e1-7435-47e7-a0eb-e46127afd358)
+![image](https://github.com/user-attachments/assets/99841a18-950f-4d90-89fc-9d8e084ff59f)
 
